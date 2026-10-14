@@ -57,13 +57,20 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// 3. Evento Fetch: Estrategia "Cache First, fallback to Network"
+// 3. Evento Fetch: Estrategia "Network First, fallback to Cache"
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Si el recurso está en caché, lo entrega; si no, lo busca en la red
-        return response || fetch(event.request);
+    fetch(event.request)
+      .then((networkResponse) => {
+        // Si la red responde correctamente, actualizamos la caché y devolvemos la respuesta
+        return caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, networkResponse.clone());
+          return networkResponse;
+        });
+      })
+      .catch(() => {
+        // Si no hay internet o falla la red, buscamos el recurso guardado en la caché
+        return caches.match(event.request);
       })
   );
 });
