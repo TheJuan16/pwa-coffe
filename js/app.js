@@ -1,4 +1,3 @@
-
 const productos = [
   { 
     id: 1, 
@@ -92,12 +91,12 @@ const productos = [
   }
 ];
 
-// Selección de elementos del DOM
+// Selección de elementos del DOM para Café
 const container = document.getElementById("cards-container");
 const detalleContainer = document.getElementById("detalle-container");
 const navHome = document.getElementById("nav-home");
 
-// Renderizar las tarjetas dinámicamente
+// Renderizar las tarjetas de café dinámicamente
 function renderCards() {
   if (!container) return;
 
@@ -117,7 +116,6 @@ function renderCards() {
 
   container.innerHTML = cardsHTML;
 
-  // Asignar los eventos de clic a cada botón "Ver más"
   const botonesVerMas = container.querySelectorAll(".btn-ver-mas");
   botonesVerMas.forEach((boton) => {
     boton.addEventListener("click", (e) => {
@@ -147,29 +145,149 @@ function mostrarDetalle(id) {
     </div>
   `;
 
- 
   container.style.display = "none";
   detalleContainer.style.display = "block";
-
-  // Volver la pantalla arriba
   window.scrollTo({ top: 0, behavior: "smooth" });
 
-  // Evento para el botón de regresar
   document.getElementById("btn-volver").addEventListener("click", regresarInicio);
 }
 
 function regresarInicio() {
   detalleContainer.style.display = "none";
-  container.style.display = ""; // Restablece al CSS original (display: grid)
+  container.style.display = ""; 
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+// Variables para la paginación de la PokéAPI
+let pokemonOffset = 0;
+const pokemonLimit = 12;
+
+// Función para obtener Pokémon desde PokéAPI con paginación
+async function fetchPokemons() {
+  const pokemonContainer = document.getElementById('pokemon-container');
+  if (!pokemonContainer) return;
+
+  try {
+    if (pokemonOffset === 0) {
+      pokemonContainer.innerHTML = '<p>Cargando Pokémon...</p>';
+    }
+
+    const response = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=${pokemonLimit}&offset=${pokemonOffset}`);
+    const data = await response.json();
+
+    if (pokemonOffset === 0) {
+      pokemonContainer.innerHTML = '';
+    }
+
+    for (const pokemon of data.results) {
+      const resDetail = await fetch(pokemon.url);
+      const pokeData = await resDetail.json();
+
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <img src="${pokeData.sprites.front_default}" alt="${pokeData.name}">
+        <div class="card-body">
+          <h3>${pokeData.name.toUpperCase()}</h3>
+          <button class="btn-ver-mas" onclick="showPokemonDetails('${pokemon.url}')">Ver más</button>
+        </div>
+      `;
+      pokemonContainer.appendChild(card);
+    }
+
+    pokemonOffset += pokemonLimit;
+
+  } catch (error) {
+    console.error('Error al obtener Pokémon:', error);
+    pokemonContainer.innerHTML = '<p>No se pudieron cargar los Pokémon. Verifica tu conexión a internet.</p>';
+  }
+}
+
+// Mostrar detalles del Pokémon en la ventana modal
+async function showPokemonDetails(url) {
+  const modal = document.getElementById('pokemon-modal');
+  const modalDetails = document.getElementById('modal-details');
+
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+
+    const types = data.types.map(t => t.type.name).join(', ');
+    const abilities = data.abilities.map(a => a.ability.name).join(', ');
+
+    modalDetails.innerHTML = `
+      <h2>${data.name.toUpperCase()} (#${data.id})</h2>
+      <img src="${data.sprites.other['official-artwork'].front_default || data.sprites.front_default}" alt="${data.name}">
+      <p><strong>Altura:</strong> ${(data.height / 10)} m</p>
+      <p><strong>Peso:</strong> ${(data.weight / 10)} kg</p>
+      <p><strong>Tipos:</strong> ${types}</p>
+      <p><strong>Habilidades:</strong> ${abilities}</p>
+    `;
+
+    modal.classList.remove('hidden');
+  } catch (error) {
+    console.error('Error al obtener detalle del Pokémon:', error);
+  }
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   renderCards();
 
   if (navHome) {
-    navHome.addEventListener("click", regresarInicio);
+    navHome.addEventListener("click", () => {
+      regresarInicio();
+      // Opcional: regresar a la pestaña de café al dar click en Home
+      document.getElementById('section-cafe').style.display = 'block';
+      document.getElementById('section-pokemon').style.display = 'none';
+      document.getElementById('tab-cafe').classList.add('active-tab');
+      document.getElementById('tab-pokemon').classList.remove('active-tab');
+    });
+  }
+
+  // Manejo de cambio de pestañas (Café / Pokémon)
+  const tabCafe = document.getElementById('tab-cafe');
+  const tabPokemon = document.getElementById('tab-pokemon');
+  const sectionCafe = document.getElementById('section-cafe');
+  const sectionPokemon = document.getElementById('section-pokemon');
+
+  if (tabCafe && tabPokemon) {
+    tabCafe.addEventListener('click', () => {
+      sectionCafe.style.display = 'block';
+      sectionPokemon.style.display = 'none';
+      tabCafe.classList.add('active-tab');
+      tabPokemon.classList.remove('active-tab');
+    });
+
+    tabPokemon.addEventListener('click', () => {
+      sectionCafe.style.display = 'none';
+      sectionPokemon.style.display = 'block';
+      tabPokemon.classList.add('active-tab');
+      tabCafe.classList.remove('active-tab');
+      
+      const pokemonContainer = document.getElementById('pokemon-container');
+      if (pokemonContainer && pokemonContainer.children.length === 0) {
+        fetchPokemons();
+      }
+    });
+  }
+
+  // Botón Cargar Más Pokémon
+  const btnCargarMas = document.getElementById('btn-cargar-mas');
+  if (btnCargarMas) {
+    btnCargarMas.addEventListener('click', () => {
+      fetchPokemons();
+    });
+  }
+
+  // Cerrar modal de Pokémon
+  const modal = document.getElementById('pokemon-modal');
+  const closeBtn = document.getElementById('close-modal');
+  
+  if (closeBtn && modal) {
+    closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+    window.addEventListener('click', (e) => {
+      if (e.target === modal) modal.classList.add('hidden');
+    });
   }
 });
 

@@ -1,10 +1,9 @@
-const CACHE_NAME = 'dev-coffe-v1';
+const CACHE_NAME = 'dev-coffe-v2';
 
-// Recursos críticos a almacenar en caché (basado en la estructura de tu proyecto)
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './style.css',
+  './css/style.css',
   './js/app.js',
   './manifest.json',
   // Iconos del manifest
@@ -16,7 +15,7 @@ const ASSETS_TO_CACHE = [
   './img/icons/icon-192x192.png',
   './img/icons/icon-384x384.png',
   './img/icons/icon-512x512.png',
-  // Imágenes del sitio
+  // Imágenes locales de café
   './img/cafe7.jpg',
   './img/cafe2.jpg',
   './img/cafe3.jpg',
@@ -29,19 +28,19 @@ const ASSETS_TO_CACHE = [
   './img/cofi.jpg'
 ];
 
-// 1. Evento Install: Guarda los archivos en caché
+// 1. Evento Install
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('[Service Worker] Guardando archivos en caché');
+        console.log('[Service Worker] Guardando archivos estáticos en caché');
         return cache.addAll(ASSETS_TO_CACHE);
       })
       .then(() => self.skipWaiting())
   );
 });
 
-// 2. Evento Activate: Limpia cachés antiguas
+// 2. Evento Activate
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -57,20 +56,30 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// 3. Evento Fetch: Estrategia "Network First, fallback to Cache"
+// 3. Evento Fetch (Network First con guardado dinámico para API e imágenes)
 self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return;
+
   event.respondWith(
     fetch(event.request)
       .then((networkResponse) => {
-        // Si la red responde correctamente, actualizamos la caché y devolvemos la respuesta
-        return caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, networkResponse.clone());
-          return networkResponse;
-        });
+        if (networkResponse && (networkResponse.status === 200 || networkResponse.type === 'opaque')) {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+        }
+        return networkResponse;
       })
       .catch(() => {
-        // Si no hay internet o falla la red, buscamos el recurso guardado en la caché
-        return caches.match(event.request);
+        return caches.match(event.request).then((cachedResponse) => {
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          if (event.request.mode === 'navigate') {
+            return caches.match('./index.html');
+          }
+        });
       })
   );
 });
