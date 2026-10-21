@@ -230,10 +230,11 @@ async function showPokemonDetails(url) {
 // LÓGICA DE INSTALACIÓN Y DETECCIÓN DE PWA
 // ==========================================
 let deferredPrompt = null;
-const btnInstalar = document.getElementById('btn-instalar');
-const installedMsg = document.getElementById('installed-msg');
 
 function checkAppInstalled() {
+  const btnInstalar = document.getElementById('btn-instalar');
+  const installedMsg = document.getElementById('installed-msg');
+
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
                        window.navigator.standalone === true;
   const wasInstalledBefore = localStorage.getItem('pwaInstalled') === 'true';
@@ -250,41 +251,41 @@ window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
 
+  const btnInstalar = document.getElementById('btn-instalar');
+  const installedMsg = document.getElementById('installed-msg');
+
   if (!checkAppInstalled() && btnInstalar) {
     btnInstalar.classList.remove('hidden');
     if (installedMsg) installedMsg.classList.add('hidden');
   }
 });
 
-if (btnInstalar) {
-  btnInstalar.addEventListener('click', async () => {
-    if (!deferredPrompt) {
-      alert('Para instalar esta app manualmente:\n- En Android/Chrome: Toca los 3 puntos arriba a la derecha y selecciona "Instalar aplicación".\n- En iPhone/Safari: Toca el botón "Compartir" y selecciona "Agregar al inicio".');
-      return;
-    }
-
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    
-    if (outcome === 'accepted') {
-      localStorage.setItem('pwaInstalled', 'true');
-      btnInstalar.classList.add('hidden');
-      if (installedMsg) installedMsg.classList.remove('hidden');
-    }
-    deferredPrompt = null;
-  });
-}
-
-window.addEventListener('appinstalled', () => {
-  localStorage.setItem('pwaInstalled', 'true');
-  if (btnInstalar) btnInstalar.classList.add('hidden');
-  if (installedMsg) installedMsg.classList.remove('hidden');
-  deferredPrompt = null;
-});
-
+// Inicialización general al cargar el DOM
 document.addEventListener("DOMContentLoaded", () => {
   checkAppInstalled();
   renderCards();
+
+  const btnInstalar = document.getElementById('btn-instalar');
+  const installedMsg = document.getElementById('installed-msg');
+
+  if (btnInstalar) {
+    btnInstalar.addEventListener('click', async () => {
+      if (!deferredPrompt) {
+        alert('Para instalar esta app:\n- En Android/Chrome: Toca los 3 puntos arriba a la derecha y selecciona "Instalar aplicación".\n- En iPhone/Safari: Toca el botón "Compartir" y selecciona "Agregar al inicio".');
+        return;
+      }
+
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      
+      if (outcome === 'accepted') {
+        localStorage.setItem('pwaInstalled', 'true');
+        btnInstalar.classList.add('hidden');
+        if (installedMsg) installedMsg.classList.remove('hidden');
+      }
+      deferredPrompt = null;
+    });
+  }
 
   if (navHome) {
     navHome.addEventListener("click", () => {
@@ -338,6 +339,16 @@ document.addEventListener("DOMContentLoaded", () => {
       if (e.target === modal) modal.classList.add('hidden');
     });
   }
+});
+
+window.addEventListener('appinstalled', () => {
+  localStorage.setItem('pwaInstalled', 'true');
+  const btnInstalar = document.getElementById('btn-instalar');
+  const installedMsg = document.getElementById('installed-msg');
+
+  if (btnInstalar) btnInstalar.classList.add('hidden');
+  if (installedMsg) installedMsg.classList.remove('hidden');
+  deferredPrompt = null;
 });
 
 // Registro del Service Worker
