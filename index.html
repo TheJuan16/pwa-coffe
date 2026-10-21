@@ -23,44 +23,47 @@
 </head>
 <body>
     <main>
-        <nav>
-            <h1>My PWA</h1>
-            <ul>
-                <li id="nav-home" style="cursor: pointer;">Home</li>
-                <li id="tab-cafe" class="active-tab" style="cursor: pointer;">☕ Café</li>
-                <li id="tab-pokemon" style="cursor: pointer;">⚡ Pokémon</li>
-                <li></li>
-            </ul>
+        <nav class="navbar">
+            <div class="nav-left">
+                <h1>My PWA</h1>
+                <ul>
+                    <li id="nav-home" style="cursor: pointer;">Home</li>
+                    <li id="tab-cafe" class="active-tab" style="cursor: pointer;">☕ Café</li>
+                    <li id="tab-pokemon" style="cursor: pointer;">⚡ Pokémon</li>
+                    <li>About</li>
+                </ul>
+            </div>
+
+            <!-- Contenedor en la esquina derecha superior para el botón o el mensaje de instalada -->
+            <div class="nav-right">
+                <button id="btn-instalar" class="btn-install hidden">
+                    📥 Descargar App
+                </button>
+                <div id="installed-msg" class="installed-badge hidden">
+                    ✅ Aplicación ya instalada
+                </div>
+            </div>
         </nav>
 
         <!-- SECCIÓN DE CAFÉ -->
         <section id="section-cafe">
-            <!-- Contenedor dinámico de tarjetas -->
             <div class="container" id="cards-container"></div>
-
-            <!-- Contenedor dinámico para la vista de detalle de cada café -->
             <div class="container" id="detalle-container" style="display: none;"></div>
         </section>
 
         <!-- SECCIÓN DE POKÉMON -->
         <section id="section-pokemon" style="display: none;">
-            <div class="container" id="pokemon-container">
-                <!-- Las tarjetas de Pokémon se cargarán aquí -->
-            </div>
-            
-            <!-- Botón para cargar más Pokémon -->
+            <div class="container" id="pokemon-container"></div>
             <div style="margin: 2rem 0; text-align: center;">
                 <button id="btn-cargar-mas" class="btn-ver-mas" style="max-width: 250px; display: inline-block;">Cargar más Pokémon</button>
             </div>
         </section>
 
-        <!-- Ventana Modal de información (Ver más) para Pokémon -->
+        <!-- Ventana Modal de información para Pokémon -->
         <div id="pokemon-modal" class="modal hidden">
             <div class="modal-content">
                 <span id="close-modal" class="close-btn">&times;</span>
-                <div id="modal-details">
-                    <!-- Los detalles del Pokémon se inyectan aquí -->
-                </div>
+                <div id="modal-details"></div>
             </div>
         </div>
     </main>

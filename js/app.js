@@ -91,12 +91,11 @@ const productos = [
   }
 ];
 
-// Selección de elementos del DOM para Café
+// Elementos DOM de Café
 const container = document.getElementById("cards-container");
 const detalleContainer = document.getElementById("detalle-container");
 const navHome = document.getElementById("nav-home");
 
-// Renderizar las tarjetas de café dinámicamente
 function renderCards() {
   if (!container) return;
 
@@ -125,7 +124,6 @@ function renderCards() {
   });
 }
 
-// Función para mostrar los detalles de un café en particular
 function mostrarDetalle(id) {
   const producto = productos.find((p) => p.id === id);
   if (!producto) return;
@@ -158,11 +156,10 @@ function regresarInicio() {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-// Variables para la paginación de la PokéAPI
+// Variables para paginación de Pokémon
 let pokemonOffset = 0;
 const pokemonLimit = 12;
 
-// Función para obtener Pokémon desde PokéAPI con paginación
 async function fetchPokemons() {
   const pokemonContainer = document.getElementById('pokemon-container');
   if (!pokemonContainer) return;
@@ -203,7 +200,6 @@ async function fetchPokemons() {
   }
 }
 
-// Mostrar detalles del Pokémon en la ventana modal
 async function showPokemonDetails(url) {
   const modal = document.getElementById('pokemon-modal');
   const modalDetails = document.getElementById('modal-details');
@@ -230,13 +226,69 @@ async function showPokemonDetails(url) {
   }
 }
 
+// ==========================================
+// LÓGICA DE INSTALACIÓN Y DETECCIÓN DE PWA
+// ==========================================
+let deferredPrompt = null;
+const btnInstalar = document.getElementById('btn-instalar');
+const installedMsg = document.getElementById('installed-msg');
+
+function checkAppInstalled() {
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                       window.navigator.standalone === true;
+  const wasInstalledBefore = localStorage.getItem('pwaInstalled') === 'true';
+
+  if (isStandalone || wasInstalledBefore) {
+    if (btnInstalar) btnInstalar.classList.add('hidden');
+    if (installedMsg) installedMsg.classList.remove('hidden');
+    return true;
+  }
+  return false;
+}
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+
+  if (!checkAppInstalled() && btnInstalar) {
+    btnInstalar.classList.remove('hidden');
+    if (installedMsg) installedMsg.classList.add('hidden');
+  }
+});
+
+if (btnInstalar) {
+  btnInstalar.addEventListener('click', async () => {
+    if (!deferredPrompt) {
+      alert('Para instalar esta app manualmente:\n- En Android/Chrome: Toca los 3 puntos arriba a la derecha y selecciona "Instalar aplicación".\n- En iPhone/Safari: Toca el botón "Compartir" y selecciona "Agregar al inicio".');
+      return;
+    }
+
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    
+    if (outcome === 'accepted') {
+      localStorage.setItem('pwaInstalled', 'true');
+      btnInstalar.classList.add('hidden');
+      if (installedMsg) installedMsg.classList.remove('hidden');
+    }
+    deferredPrompt = null;
+  });
+}
+
+window.addEventListener('appinstalled', () => {
+  localStorage.setItem('pwaInstalled', 'true');
+  if (btnInstalar) btnInstalar.classList.add('hidden');
+  if (installedMsg) installedMsg.classList.remove('hidden');
+  deferredPrompt = null;
+});
+
 document.addEventListener("DOMContentLoaded", () => {
+  checkAppInstalled();
   renderCards();
 
   if (navHome) {
     navHome.addEventListener("click", () => {
       regresarInicio();
-      // Opcional: regresar a la pestaña de café al dar click en Home
       document.getElementById('section-cafe').style.display = 'block';
       document.getElementById('section-pokemon').style.display = 'none';
       document.getElementById('tab-cafe').classList.add('active-tab');
@@ -244,7 +296,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Manejo de cambio de pestañas (Café / Pokémon)
   const tabCafe = document.getElementById('tab-cafe');
   const tabPokemon = document.getElementById('tab-pokemon');
   const sectionCafe = document.getElementById('section-cafe');
@@ -271,7 +322,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Botón Cargar Más Pokémon
   const btnCargarMas = document.getElementById('btn-cargar-mas');
   if (btnCargarMas) {
     btnCargarMas.addEventListener('click', () => {
@@ -279,7 +329,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Cerrar modal de Pokémon
   const modal = document.getElementById('pokemon-modal');
   const closeBtn = document.getElementById('close-modal');
   

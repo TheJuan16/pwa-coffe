@@ -28,26 +28,22 @@ const ASSETS_TO_CACHE = [
   './img/cofi.jpg'
 ];
 
-// 1. Evento Install
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('[Service Worker] Guardando archivos estáticos en caché');
         return cache.addAll(ASSETS_TO_CACHE);
       })
       .then(() => self.skipWaiting())
   );
 });
 
-// 2. Evento Activate
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cache) => {
           if (cache !== CACHE_NAME) {
-            console.log('[Service Worker] Borrando caché antigua:', cache);
             return caches.delete(cache);
           }
         })
@@ -56,7 +52,7 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// 3. Evento Fetch (Network First con guardado dinámico para API e imágenes)
+// Estrategia Network First con almacenamiento dinámico para API e imágenes
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 

@@ -17,18 +17,31 @@ main {
     text-align: center;
 }
 
-/* ===== NAVEGACIÓN Y PESTAÑAS ===== */
-nav {
+/* ===== NAVEGACIÓN RESPONSIVA Y PESTAÑAS ===== */
+.navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1.5rem;
-    flex-wrap: wrap;
-    gap: 1rem;
     background-color: #ffffff;
-    padding: 1rem;
+    padding: 1rem 1.2rem;
     border-radius: 12px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.nav-left {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.nav-right {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
 }
 
 nav h1 {
@@ -63,6 +76,42 @@ li:hover {
 li.active-tab {
     color: #ffffff !important;
     background-color: brown;
+}
+
+/* Botón de instalación en la esquina superior derecha */
+.btn-install {
+    background-color: #27ae60;
+    color: #ffffff;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: bold;
+    font-family: inherit;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
+.btn-install:hover {
+    background-color: #219150;
+    transform: translateY(-1px);
+}
+
+/* Badge / Mensaje de aplicación ya instalada */
+.installed-badge {
+    background-color: #e8f8f0;
+    color: #27ae60;
+    border: 1px solid #27ae60;
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
 }
 
 /* ===== DISPOSICIÓN EN REJILLA (GRID) ===== */
@@ -262,7 +311,7 @@ li.active-tab {
 }
 
 /* ===================================================
-   MEDIA QUERIES
+   MEDIA QUERIES (ADAPTACIÓN MÓVIL Y TABLET)
    =================================================== */
 @media (max-width: 768px) {
     .container {
@@ -270,10 +319,20 @@ li.active-tab {
         gap: 1.2rem;
     }
 
-    nav {
+    .navbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .nav-left {
         flex-direction: column;
         align-items: center;
-        text-align: center;
+    }
+
+    .nav-right {
+        margin-left: 0;
+        justify-content: center;
+        width: 100%;
     }
 
     ul {
@@ -305,6 +364,11 @@ li.active-tab {
     }
 
     .btn-volver {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .btn-install, .installed-badge {
         width: 100%;
         justify-content: center;
     }
